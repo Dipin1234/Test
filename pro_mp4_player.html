@@ -1,0 +1,237 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro MP4 Player</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .video-container {
+            max-width: 800px;
+            width: 100%;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        video {
+            width: 100%;
+            display: block;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .controls button, .controls select {
+            background: #444;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            margin: 0 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .controls button:hover, .controls select:hover {
+            background: #666;
+        }
+        .time {
+            font-size: 14px;
+        }
+        .load-url {
+            display: flex;
+            align-items: center;
+        }
+        .load-url input {
+            padding: 8px;
+            margin-right: 5px;
+            border-radius: 5px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <video id="videoPlayer" controls>
+            <source id="videoSource" src="" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div class="controls">
+            <button id="playPauseBtn">Play/Pause</button>
+            <select id="speedControl">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2x</option>
+                <option value="4">4x</option>
+            </select>
+            <span class="time" id="timeDisplay">0:00 / 0:00</span>
+            <button id="pipBtn">PiP</button>
+            <button id="fullScreenBtn">Full Screen</button>
+            <button id="castBtn">Cast</button>
+            <span id="castStatus">Disconnected</span>
+            <div class="load-url">
+                <input type="text" id="urlInput" placeholder="Enter video URL">
+                <button id="loadUrlBtn">Load URL</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const videoPlayer = document.getElementById('videoPlayer');
+        const videoSource = document.getElementById('videoSource');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const speedControl = document.getElementById('speedControl');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const pipBtn = document.getElementById('pipBtn');
+        const fullScreenBtn = document.getElementById('fullScreenBtn');
+        const castBtn = document.getElementById('castBtn');
+        const castStatus = document.getElementById('castStatus');
+        const urlInput = document.getElementById('urlInput');
+igated to avoid XSS attacks
+        const loadUrlBtn = document.getElementById('loadUrlBtn');
+
+        // Function to get query parameter
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Load video from query parameter on page load
+        window.onload = () => {
+            const videoUrl = getQueryParam('video');
+            if (videoUrl) {
+                videoSource.src = decodeURIComponent(videoUrl);
+                videoPlayer.load();
+                videoPlayer.play().catch(err => console.error('Auto-play failed:', err));
+                urlInput.value = videoUrl; // Display URL in input
+            }
+        };
+
+        // Play/Pause functionality
+        playPauseBtn.addEventListener('click', () => {
+            if (videoPlayer.paused) {
+                videoPlayer.play();
+                playPauseBtn.textContent = 'Pause';
+            } else {
+                videoPlayer.pause();
+                playPauseBtn.textContent = 'Play';
+            }
+        });
+
+        // Speed control
+        speedControl.addEventListener('change', () => {
+            videoPlayer.playbackRate = parseFloat(speedControl.value);
+        });
+
+        // Time display
+        videoPlayer.addEventListener('timeupdate', () => {
+            const current = formatTime(videoPlayer.currentTime);
+            const duration = formatTime(videoPlayer.duration);
+            timeDisplay.textContent = `${current} / ${duration}`;
+        });
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${min}:${sec}`;
+        }
+
+        // Picture-in-Picture
+        pipBtn.addEventListener('click', async () => {
+            try {
+                if (document.pictureInPictureElement) {
+                    await document.exitPictureInPicture();
+                } else {
+                    await videoPlayer.requestPictureInPicture();
+                }
+            } catch (err) {
+                console.error('PiP error:', err);
+            }
+        });
+
+        // Full Screen
+        fullScreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                videoPlayer.requestFullscreen().catch(err => console.error('Fullscreen error:', err));
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        // Placeholder for Cast (not implemented)
+        castBtn.addEventListener('click', () => {
+            castStatus.textContent = 'Casting...';
+            setTimeout(() => {
+                castStatus.textContent = 'Disconnected';
+                alert('Casting not implemented in this example.');
+            }, 1000);
+        });
+
+        // Load URL from input
+        loadUrlBtn.addEventListener('click', () => {
+            const url = urlInput.value.trim();
+            if (url) {
+                videoSource.src = url;
+                videoPlayer.load();
+                videoPlayer.play().catch(err => console.error('Play error:', err));
+            }
+        });
+    </script>
+</body>
+</html>
