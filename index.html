@@ -1,0 +1,308 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>वीडियो कोर्स - शैक्षिक पाठ्यक्रम</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            color: #ff0000;
+        }
+
+        header {
+            background-color: #000;
+            color: #ff0000;
+            text-align: center;
+            padding: 2rem;
+            border-bottom: 2px solid #ff0000;
+            text-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .video-card {
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 1px solid #ff0000;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .video-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.8);
+        }
+
+        .video-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            opacity: 0.9;
+            transition: opacity 0.3s;
+        }
+
+        .video-card:hover img {
+            opacity: 1;
+        }
+
+        .video-card-content {
+            padding: 1.5rem;
+        }
+
+        .video-card-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #ff0000;
+            text-shadow: 0 0 8px rgba(255, 0, 0, 0.7);
+        }
+
+        .video-card-content p {
+            color: #cc0000;
+            margin-bottom: 1rem;
+        }
+
+        .video-card-content a {
+            display: inline-block;
+            background-color: #ff0000;
+            color: #000;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .video-card-content a:hover {
+            background-color: #cc0000;
+            box-shadow: 0 0 10px #ff0000;
+        }
+
+        footer {
+            background-color: #000;
+            color: #ff0000;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+            border-top: 2px solid #ff0000;
+            text-shadow: 0 0 10px #ff0000;
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>शैक्षिक वीडियो कोर्स</h1>
+    </header>
+
+    <div class="container">
+        <!-- Video 1 -->
+        <div class="video-card">
+            <img src="https://apps-s3-prod.utkarshapp.com/admin_v1/file_manager/thumbnail/6378306_Educational%20Management.png" alt="Educational Management Thumbnail">
+            <div class="video-card-content">
+                <h3>Part-1 || पाठ्यक्रम परिचर्चा (Curriculum Discussion)</h3>
+                <p>17-May</p>
+                <a href="pro_mp4_player.html?video=https%3A%2F%2Fapps-s3-jw-prod.utkarshapp.com%2Fadmin_v1%2Ffile_library%2Fvideos%2Fenc_plain_mp4%2F2569970%2Fplain%2F720x1280.mp4">वीडियो चलाएँ</a>
+            </div>
+        </div>
+
+        <!-- Video 2 -->
+        <div class="video-card">
+            <img src="https://apps-s3-prod.utkarshapp.com/admin_v1/file_manager/thumbnail/7813199_Education%20Psychology.png" alt="Educational Psychology Thumbnail">
+            <div class="video-card-content">
+                <h3>Part-1 || शैक्षिक परिदृश्य (Educational Scenario)</h3>
+                <p>20-May</p>
+                <a href="pro_mp4_player.html?video=https%3A%2F%2Fapps-s3-jw-prod.utkarshapp.com%2Fadmin_v1%2Ffile_library%2Fvideos%2Fenc_plain_mp4%2F2573459%2Fplain%2F720x1280.mp4">वीडियो चलाएँ</a>
+            </div>
+        </div>
+
+        <!-- Video 3 -->
+        <div class="video-card">
+            <img src="https://apps-s3-prod.utkarshapp.com/admin_v1/file_manager/thumbnail/1255531_Educational%20Psychology.png" alt="Educational Psychology Thumbnail">
+            <div class="video-card-content">
+                <h3>Part-2 || शैक्षिक परिदृश्य (Educational Scenario)</h3>
+                <p>21-May</p>
+                <a href="pro_mp4_player.html?video=https%3A%2F%2Fapps-s3-jw-prod.utkarshapp.com%2Fadmin_v1%2Ffile_library%2Fvideos%2Fenc_plain_mp4%2F2575171%2Fplain%2F720x1280.mp4">वीडियो चलाएँ</a>
+            </div>
+        </div>
+
+        <!-- Add remaining video cards following the same pattern -->
+        <!-- Example for one more section -->
+        <!-- Video 4 -->
+        <div class="video-card">
+            <img src="https://apps-s3-prod.utkarshapp.com/admin_v1/file_manager/thumbnail/2822057_Educational%20Psychology.png" alt="Educational Psychology Thumbnail">
+            <div class="video-card-content">
+                <h3>Part-3 || शैक्षिक परिदृश्य (Educational Scenario)</h3>
+                <p>22-May</p>
+                <a href="pro_mp4_player.html?video=https%3A%2F%2Fapps-s3-jw-prod.utkarshapp.com%2Fadmin_v1%2Ffile_library%2Fvideos%2Fenc_plain_mp4%2F2576956%2Fplain%2F720x1280.mp4">वीडियो चलाएँ</a>
+            </div>
+        </div>
+
+        <!-- Video 5 -->
+        <div class="video-card">
+            <img src="https://apps-s3-prod.utkarshapp.com/admin_v1/file_manager/thumbnail/6230023_Educational%20Scenario.png" alt="Educational Scenario Thumbnail">
+            <div class="video-card-content">
+                <h3>Part-1 || भारत के शैक्षणिक संस्थान (Educational Institutions of India)</h3>
+                <p>23-May</p>
+                <a href="pro_mp4_player.html?video=https%3A%2F%2Fapps-s3-jw-prod.utkarshapp.com%2Fadmin_v1%2Ffile_library%2Fvideos%2Fenc_plain_mp4%2F2578847%2Fplain%2F720x1280.mp4">वीडियो चलाएँ</a>
+            </div>
+        </div>
+
+        <!-- Video 6 -->
+        <div class="video-card">
+            <img src="https://apps-s3-prod.utkarshapp.com/admin_v1/file_manager/thumbnail/1429203_Educational%20Scenario.png" alt="Educational Scenario Thumbnail">
+            <div class="video-card-content">
+                <h3>Part-2 || भारत के शैक्षणिक संस्थान (Educational Institutions of India)</h3>
+                <p>24-May</p>
+                <a href="pro_mp4_player.html?video=https%3A%2F%2Fapps-s3-jw-prod.utkarshapp.com%2Fadmin_v1%2Ffile_library%2Fvideos%2Fenc_plain_mp4%2F2580625%2Fplain%2F720x1280.mp4">वीडियो चलाएँ</a>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Video 7 -->
+        <div class="video-card">
+            <img src="https://apps-s3-prod.utkarshapp.com/admin_v1/file_manager/thumbnail/2463846_History%20Of%20Rajasthan.png" alt="History Of Rajasthan Thumbnail">
+            <div class="video-card-content">
+                <h3>Part-1 || पाठ्यक्रम परिचर्चा</h3>
+                <p>22-April</p>
+                <a href="pro_mp4_player.html?video=https%3A%2F%2Fapps-s3-jw-prod.utkarshapp.com%2Fadmin_v1%2Ffile_library%2Fvideos%2Fenc_plain_mp4%2F2533884%2Fplain%2F720x1280.mp4">वीडियो चलाएँ</a>
+            </div>
+        </div>
+
+        <!-- Video 8 -->
+        <div class="video-card">
+            <img src="https://apps-s3-prod.utkarshapp.com/admin_v1/file_manager/thumbnail/6945002_History%20Of%20Rajasthan.png" alt="History Of Rajasthan Thumbnail">
+            <div class="video-card-content">
+                <h3>Part-1 || राजस्थान का परिचय</h3>
+                <p>23-April</p>
+                <a href="pro_mp4_player.html?video=https%3A%2F%2Fapps-s3-jw-prod.utkarshapp.com%2Fadmin_v1%2Ffile_library%2Fvideos%2Fenc_plain_mp4%2F2535444%2Fplain%2F720x1280.mp4">वीडियो चलाएँ</a>
+            </div>
+        </div>
+
+        <!-- 1857 की क्रांति (1857 Revolution) -->
+        <!-- Video 9 -->
+        <div class="video-card">
+            <img src="https://apps-s3-prod.utkarshapp.com/admin_v1/file_manager/thumbnail/6945002_History%20Of%20Rajasthan.png" alt="History Of Rajasthan Thumbnail">
+            <div class="video-card-content">
+                <h3>Part-1 || 1857 की क्रांति</h3>
+                <p>24-April</p>
+                <a href="pro_mp4_player.html?video=https%3A%2F%2Fapps-s3-jw-prod.utkarshapp.com%2Fadmin_v1%2Ffile_library%2Fvideos%2Fenc_plain_mp4%2F2537044%2Fplain%2F720x1280.mp4">वीडियो चलाएँ</a>
+            </div>
+        </div>
+
+        <!-- Add remaining videos following the same pattern -->
+        <!-- Example for one more section -->
+        <!-- Video 10 -->
+        <div class="video-card">
+            <img src="https://apps-s3-prod.utkarshapp.com/admin_v1/file_manager/thumbnail/937124_History%20Of%20Rajasthan.png" alt="History Of Rajasthan Thumbnail">
+            <div class="video-card-content">
+                <h3>Part-2 || 1857 की क्रांति</h3>
+                <p>25-April</p>
+                <a href="pro_mp4_player.html?video=https%3A%2F%2Fapps-s3-jw-prod.utkarshapp.com%2Fadmin_v1%2Ffile_library%2Fvideos%2Fenc_plain_mp4%2F2538668%2Fplain%2F720x1280.mp4">वीडियो चलाएँ</a>
+            </div>
+        </div>
+
+        <!-- Continue for all other video cards -->
+        <!-- Pattern: <a href="pro_mp4_player.html?video=<encoded-video-url>">वीडियो चलाएँ</a> -->
+        <!-- Example for राजस्थान में किसान आंदोलन -->
+        <div class="video-card">
+            <img src="https://apps-s3-prod.utkarshapp.com/admin_v1/file_manager/thumbnail/296081_History%20Of%20Rajasthan.png" alt="History Of Rajasthan Thumbnail">
+            <div class="video-card-content">
+                <h3>Part-1 || राजस्थान में किसान आंदोलन</h3>
+                <p>06-May</p>
+                <a href="pro_mp4_player.html?video=https%3A%2F%2Fapps-s3-jw-prod.utkarshapp.com%2Fadmin_v1%2Ffile_library%2Fvideos%2Fenc_plain_mp4%2F2553615%2Fplain%2F720x1280.mp4">वीडियो चलाएँ</a>
+            </div>
+        </div>
+
+        <!-- Add remaining videos similarly -->
+        <!-- ... -->
+
+        <!-- राजस्थान के लोक गीत (Rajasthan Folk Songs) -->
+        <div class="video-card">
+            <img src="https://apps-s3-prod.utkarshapp.com/admin_v1/file_manager/thumbnail/1999057_Art%20%26%20Cul.%20by%20paliwal%20sir.jpg" alt="Rajasthan Folk Songs Part 1 Thumbnail">
+            <div class="video-card-content">
+                <h3>Part-1 || राजस्थान के लोक गीत</h3>
+                <p>07-May</p>
+                <a href="pro_mp4_player.html?video=https%3A%2F%2Fapps-s3-jw-prod.utkarshapp.com%2Fadmin_v1%2Ffile_library%2Fvideos%2Fenc_plain_mp4%2F2555413%2Fplain%2F720x1280.mp4">वीडियो चलाएँ</a>
+            </div>
+        </div>
+
+        <!-- Continue for all other sections -->
+    </div>
+
+    <footer>
+        <p>© 2025 शैक्षिक वीडियो कोर्स. सभी अधिकार सुरक्षित.<br>कृपया अच्छे से पढ़ाई करें।
+        समय बर्बाद मत करें, यही वक्त है मेहनत का — जो आज पसीना बहाओगे, वही कल सफलता बनकर लौटेगा।
+        </p>
+    </footer>
+</body>
+</html>
